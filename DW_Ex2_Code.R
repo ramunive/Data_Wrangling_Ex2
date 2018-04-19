@@ -35,8 +35,14 @@ summary(titanic2)
 
 # Determine the number of missing values by tallying the number of C's, Q's, and S's
 # and then subtracting from the total number of observations
-# From str(titanic2) we know there are 1310 observations
-# 1310 - 1307 = 3 missing values
+
+NValidObservations <- sum(titanic2$embarked %in% c('C', 'Q', 'S'))
+paste("Number of valid observations:", NValidObservations, sep =  " ")
+
+table(titanic2$embarked)
+sum(table(titanic2$embarked))
+# There are a total of 1310 observations
+# 3 missing values
 
 for(i in 1:length(titanic2$embarked)){
   if (titanic2$embarked[i] != "C" & titanic2$embarked[i] !="Q" & titanic2$embarked[i] != "S")
@@ -44,7 +50,8 @@ for(i in 1:length(titanic2$embarked)){
 }
 
 # Verify results.  Should be C:270 + Q:123 + S:917 = 1310
-summary(titanic2)
+table(titanic2$embarked)
+sum(table(titanic2$embarked))
 # There are now C:270 + Q:123 + S:917 = 1310
 
 #. 2. Age
@@ -59,10 +66,9 @@ summary(titanic2)
 
 # Use the mean age to populate the missing values in the age column
 
-for(i in 1:length(titanic2$age)){
-  if(is.na(titanic2$age[i]))
-    titanic2$age[i] = average_age
-}
+titanic2$age <- sapply(titanic2$age, function(x){
+  ifelse(is.na(x), average_age, x)
+})
 
 # Verify results
 summary(titanic2)
@@ -105,15 +111,12 @@ titanic2$cabin <- zap_empty(as.character(titanic2$cabin))
 sum(is.na(titanic2$cabin))
 
 # create a new column has_cabin_number which has 1 if there is a cabin number, and 0 otherwise
-has_cabin_number <- vector("integer", length(titanic2$cabin))
+has_cabin_number <- titanic2$cabin
 
-for(i in 1:length(titanic2$cabin)){
-  if(is.na(titanic2$cabin[i])){
-    has_cabin_number[i] = 0
-  } else {
-    has_cabin_number[i] = 1
-  }
-}
+has_cabin_number <- sapply(has_cabin_number, function(x){
+  ifelse(is.na(x), 0, 1)
+})
+
 
 # Check results. The sum of the 1s should equal the number of non-missing values
 sum(has_cabin_number) == length(titanic2$cabin) - sum(is.na(titanic2$cabin))
@@ -136,3 +139,5 @@ str(titanic2)
 # Store cleaned up data set to the file titanic_clean.csv
 
 write.csv(titanic2, "titanic_clean.csv", row.names = FALSE)
+
+
